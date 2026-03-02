@@ -5,6 +5,7 @@ import httpx
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 import uvicorn
 from aiogram import Bot, Dispatcher, types
 from aiogram.enums import ParseMode
@@ -38,6 +39,9 @@ mongo_client   = None
 db             = None
 complaints_col = None
 feedback_col   = None
+
+# ─── SSE clients ─────────────────────────────────────────────────────────────
+_sse_clients: set[asyncio.Queue] = set()
 counters_col   = None
 
 # Thread pool for running sync pymongo calls without event-loop binding issues
@@ -242,8 +246,12 @@ _NOISE_ONLY    = {"problem", "issue", "issues", "something", "thing", "help",
 
 
 def is_valid_complaint(text: str) -> bool:
-    """Reject if: too short, too few words, gibberish, or only noise words."""
+    """Reject if: too short, too few words, gibberish, or only noise words.
+    Exception: single urgent cry (e.g. 'im dying') always passes."""
     stripped = text.strip()
+    # Always allow if text contains an urgency word — even if short/vague
+    if set(re.findall(r"\w+", stripped.lower())) & _URGENCY_WORDS:
+        return True
     if len(stripped) < 10:
         return False
     words = re.findall(r"[a-zA-Z]+", stripped.lower())
@@ -385,6 +393,10 @@ async def log_complaint(message: types.Message):
             "timestamp":    timestamp,
         }
         await _db(lambda: complaints_col.insert_one(doc))
+
+        # Notify SSE clients so dashboard refreshes instantly
+        for q in list(_sse_clients):
+            await q.put("new")
 
         await message.reply(
             f"✅ Complaint *#{complaint_id}* registered!\n\n"
@@ -590,6 +602,29 @@ async def get_stats():
         "by_sentiment":  [{"label": d["_id"], "count": d["count"]} for d in sent_data],
         "by_priority":   [{"label": d["_id"], "count": d["count"]} for d in prio_data],
     }
+
+
+@app.get("/events")
+async def sse_events():
+    """Server-Sent Events stream — pushes 'new' whenever a complaint is logged."""
+    queue: asyncio.Queue = asyncio.Queue()
+    _sse_clients.add(queue)
+    async def stream():
+        try:
+            # Send an initial ping so the browser connection confirms
+            yield "data: connected\n\n"
+            while True:
+                msg = await queue.get()
+                yield f"data: {msg}\n\n"
+        except asyncio.CancelledError:
+            pass
+        finally:
+            _sse_clients.discard(queue)
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.get("/dashboard")

@@ -923,7 +923,10 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
     loadAll();
-    setInterval(loadAll, 5000);
+    // Real-time refresh via SSE — reloads whenever a new complaint is logged
+    const es = new EventSource('/events');
+    es.onmessage = e => { if (e.data === 'new') loadAll(); };
+    es.onerror = () => es.close(); // will reconnect automatically on next page load
   </script>
 </body>
 
