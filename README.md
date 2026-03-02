@@ -7,14 +7,15 @@ Citizens file complaints via a Telegram bot; an admin web dashboard tracks, filt
 
 ## ✨ Features
 
-- 📝 **Complaint logging** via `/log` — auto-classified by department & priority using NLP
-- 🧠 **Zero-shot NLP** — HuggingFace `distilbart-mnli-12-3` classifies across 50+ categories
-- 😤 **Sentiment analysis** — `nlptown/bert-base-multilingual-uncased-sentiment`
-- 🏢 **Auto department routing** — maps category → correct government department
-- 📊 **Admin dashboard** — dark/light mode, stat cards, Chart.js charts, searchable table
-- ✅ **Resolve / Delete** — admin-only actions via Telegram commands or dashboard
+- 📝 **Complaint logging** via `/log` — smart validation rejects bogus/vague input before processing
+- 🧠 **Weighted keyword NLP** — unified `_RULES` dict scores phrases (3 pts) and words (1 pt) in a single pass
+- 🤖 **HuggingFace Inference API fallback** — `facebook/bart-large-mnli` zero-shot called only when keyword score is zero
+- 🏢 **Auto department routing** — category → department → base priority all in one lookup
+- ⚡ **Emergency detection** — urgency words and emergency categories always force High priority
+- 📊 **Admin dashboard** — dark/light mode, stat cards, Chart.js charts, searchable table, served at `/`
+- ✅ **Resolve / Delete** — admin-only actions via Telegram commands or dashboard buttons
 - 💬 **Feedback tab** — users submit feedback via `/feedback`, visible in dashboard
-- 🔁 **Auto-refresh** — dashboard updates every 30 seconds
+- ⚡ **Real-time refresh** — dashboard updates instantly via Server-Sent Events when a complaint is logged
 - 🚀 **Deployable** — Dockerfile + `render.yaml` for one-click Render.com deploy
 
 ---
@@ -25,9 +26,10 @@ Citizens file complaints via a Telegram bot; an admin web dashboard tracks, filt
 |---|---|
 | Bot | [aiogram v3](https://docs.aiogram.dev/) |
 | Web API | [FastAPI](https://fastapi.tiangolo.com/) + uvicorn |
-| Database | MongoDB (local or Atlas) via pymongo |
-| NLP | HuggingFace Transformers |
-| Frontend | Jinja2 + Chart.js (no build step) |
+| Database | MongoDB Atlas via pymongo + certifi TLS |
+| NLP | Weighted keyword rules + HuggingFace Inference API (fallback) |
+| HTTP client | httpx (async, for HF API calls) |
+| Frontend | Jinja2 + Chart.js + SSE (no build step) |
 | Deploy | Docker + Render.com |
 
 ---
@@ -67,7 +69,7 @@ python main.py
 ```
 
 - Bot starts polling  
-- Dashboard at → `http://localhost:8000/dashboard`  
+- Dashboard at → `http://localhost:8000/`  
 - API docs at → `http://localhost:8000/docs`
 
 ---
@@ -89,7 +91,9 @@ python main.py
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/dashboard` | Admin web UI |
+| `GET` | `/` | Admin dashboard |
+| `GET` | `/dashboard` | Redirects to `/` |
+| `GET` | `/events` | SSE stream — pushes `new` on each complaint logged |
 | `GET` | `/api/complaints` | List complaints (filterable) |
 | `PUT` | `/api/complaints/{id}/resolve` | Resolve a complaint |
 | `DELETE` | `/api/complaints/{id}` | Delete a complaint |
