@@ -1,3 +1,6 @@
+# Interview / personal docs (keep local only)
+docs/
+
 # Environment
 .env
 *.env

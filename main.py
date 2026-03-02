@@ -619,8 +619,7 @@ async def main():
     mongo_client   = MongoClient(
         MONGO_URI,
         serverSelectionTimeoutMS=10000,
-        tls=True,
-        tlsAllowInvalidCertificates=True,
+        tlsCAFile=certifi.where(),
     )
     db             = mongo_client["grievance_bot"]
     complaints_col = db["complaints"]
