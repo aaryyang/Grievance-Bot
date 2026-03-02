@@ -573,6 +573,9 @@ async def main():
     feedback_col   = db["feedback"]
     counters_col   = db["counters"]
 
+    # Drop any existing Telegram connection before polling — prevents
+    # TelegramConflictError when Render starts a new instance before the old one stops
+    await bot.delete_webhook(drop_pending_updates=True)
     bot_task = asyncio.create_task(dp.start_polling(bot))
 
     logging.info(f"✅ Dashboard → http://localhost:{PORT}/")
