@@ -616,7 +616,12 @@ async def main():
     global mongo_client, db, complaints_col, feedback_col, counters_col
 
     # Sync MongoClient — no asyncio loop binding whatsoever
-    mongo_client   = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
+    mongo_client   = MongoClient(
+        MONGO_URI,
+        serverSelectionTimeoutMS=10000,
+        tls=True,
+        tlsAllowInvalidCertificates=True,
+    )
     db             = mongo_client["grievance_bot"]
     complaints_col = db["complaints"]
     feedback_col   = db["feedback"]
