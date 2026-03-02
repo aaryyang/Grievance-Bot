@@ -1,6 +1,7 @@
 import os
 import logging
 import asyncio
+import httpx
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +27,7 @@ load_dotenv()
 ADMIN_ID  = int(os.getenv("ADMIN_ID", "0"))
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+HF_TOKEN  = os.getenv("HF_TOKEN", "")
 PORT      = int(os.getenv("PORT", 8000))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
@@ -332,6 +334,43 @@ def classify_complaint(text: str) -> str:
     return best_cat
 
 
+# Candidate labels sent to HF API — top-level category names
+_HF_LABELS = [cat for cat, _ in _CATEGORY_KEYWORDS]
+_HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+
+
+async def classify_complaint(text: str) -> str:
+    """Classify using HF zero-shot API; falls back to keyword scorer."""
+    if not is_valid_complaint(text):
+        return "Invalid Complaint"
+    # ── Try HF Inference API ──────────────────────────────────────────────────
+    if HF_TOKEN:
+        try:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                resp = await client.post(
+                    _HF_API_URL,
+                    headers={"Authorization": f"Bearer {HF_TOKEN}"},
+                    json={"inputs": text, "parameters": {"candidate_labels": _HF_LABELS}},
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    category = data["labels"][0]
+                    logging.info(f"HF classified: '{category}' (score {data['scores'][0]:.2f})")
+                    return category
+                logging.warning(f"HF API returned {resp.status_code}, falling back to keywords")
+        except Exception as e:
+            logging.warning(f"HF API error ({e}), falling back to keywords")
+    # ── Keyword fallback ──────────────────────────────────────────────────────
+    lower = text.lower()
+    best_cat, best_score = "General", 0
+    for category, keywords in _CATEGORY_KEYWORDS:
+        score = sum(1 for kw in keywords if kw in lower)
+        if score > best_score:
+            best_score, best_cat = score, category
+    logging.info(f"Keyword classified: '{best_cat}'")
+    return best_cat
+
+
 def analyze_sentiment(text: str) -> Tuple[str, str]:
     lower = text.lower()
     words = set(re.findall(r"\w+", lower))
@@ -372,7 +411,7 @@ async def log_complaint(message: types.Message):
         text = parts[1].strip()
         await message.reply("🕐 Processing your complaint…")
 
-        category = classify_complaint(text)
+        category = await classify_complaint(text)
         if category == "Invalid Complaint":
             await message.reply("❌ Your complaint is invalid. Please provide a real issue.")
             return
