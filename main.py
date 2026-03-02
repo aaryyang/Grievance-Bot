@@ -512,8 +512,8 @@ async def general_message_handler(message: types.Message):
 
 # ─── REST API ─────────────────────────────────────────────────────────────────
 @app.get("/")
-async def home():
-    return {"message": "Grievance Bot API v2 is running!", "dashboard": "/dashboard", "docs": "/docs"}
+async def home(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 
 @app.get("/api/complaints")
@@ -603,8 +603,9 @@ async def get_stats():
 
 
 @app.get("/dashboard")
-async def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+async def dashboard():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/")
 
 
 # ─── Entry point ─────────────────────────────────────────────────────────────
@@ -628,7 +629,7 @@ async def main():
 
     bot_task = asyncio.create_task(dp.start_polling(bot))
 
-    logging.info(f"✅ Dashboard → http://localhost:{PORT}/dashboard")
+    logging.info(f"✅ Dashboard → http://localhost:{PORT}/")
     logging.info(f"✅ API Docs  → http://localhost:{PORT}/docs")
 
     try:
