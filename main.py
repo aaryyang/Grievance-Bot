@@ -9,6 +9,7 @@ import uvicorn
 from aiogram import Bot, Dispatcher, types
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
+from aiogram.exceptions import TelegramConflictError
 from datetime import datetime
 import pytz
 from pymongo import MongoClient, ReturnDocument
@@ -234,8 +235,31 @@ _HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-m
 _HF_LABELS  = [c for c in _RULES if c != "General"]
 
 
+_BOGUS_PATTERN = re.compile(r"^[^a-zA-Z]*$|^(.)\1{4,}")
+_NOISE_ONLY    = {"problem", "issue", "issues", "something", "thing", "help",
+                  "please", "hi", "hello", "ok", "yes", "no", "test", "hey",
+                  "sir", "madam", "kindly", "request", "need", "want"}
+
+
 def is_valid_complaint(text: str) -> bool:
-    return bool(re.search(r"[a-zA-Z]", text))
+    """Reject if: too short, too few words, gibberish, or only noise words."""
+    stripped = text.strip()
+    if len(stripped) < 10:
+        return False
+    words = re.findall(r"[a-zA-Z]+", stripped.lower())
+    if len(words) < 3:
+        return False
+    if _BOGUS_PATTERN.search(stripped):
+        return False
+    # Reject if every meaningful word is a generic noise word
+    meaningful = [w for w in words if len(w) > 2 and w not in _NOISE_ONLY]
+    if not meaningful:
+        return False
+    # Reject if >70% of chars are the same (e.g. "aaaaabbbbb")
+    most_common = max(set(stripped.lower()), key=stripped.lower().count)
+    if stripped.lower().count(most_common) / len(stripped) > 0.7:
+        return False
+    return True
 
 
 def _keyword_score(lower: str) -> tuple[str, int]:
@@ -271,12 +295,21 @@ async def classify_complaint(text: str) -> tuple[str, str, str]:
                 )
                 if resp.status_code == 200:
                     data = resp.json()
-                    cat = data["labels"][0]
-                    logging.info(f"HF classified (ambiguous): '{cat}' ({data['scores'][0]:.2f})")
+                    # Only accept HF result if it's confident enough
+                    if data["scores"][0] >= 0.35:
+                        cat = data["labels"][0]
+                        logging.info(f"HF classified (ambiguous): '{cat}' ({data['scores'][0]:.2f})")
+                    else:
+                        logging.info(f"HF low confidence ({data['scores'][0]:.2f}), rejecting as vague")
+                        cat = "General"
                 else:
                     logging.warning(f"HF API {resp.status_code}, using General")
         except Exception as e:
             logging.warning(f"HF API error: {e}")
+
+    # Reject complaints that couldn't be classified into any real category
+    if cat == "General" and score == 0:
+        return "Too Vague", "General Grievance Cell", "Low"
 
     rule     = _RULES.get(cat, _RULES["General"])
     dept     = rule["dept"]
@@ -321,7 +354,18 @@ async def log_complaint(message: types.Message):
 
         category, department, priority = await classify_complaint(text)
         if category == "Invalid Complaint":
-            await message.reply("\u274c Your complaint is invalid. Please provide a real issue.")
+            await message.reply(
+                "❌ That doesn't look like a valid complaint.\n"
+                "Please describe a real civic issue with at least a few words.\n"
+                "Example: /log The road near my house has a large pothole."
+            )
+            return
+        if category == "Too Vague":
+            await message.reply(
+                "⚠️ Your complaint is too vague to be categorised.\n"
+                "Please mention the specific issue (e.g. water supply, pothole, garbage, electricity).\n"
+                "Example: /log There is no water supply in our area since yesterday."
+            )
             return
 
         sentiment    = analyze_sentiment(text, priority)
@@ -573,10 +617,24 @@ async def main():
     feedback_col   = db["feedback"]
     counters_col   = db["counters"]
 
-    # Drop any existing Telegram connection before polling — prevents
-    # TelegramConflictError when Render starts a new instance before the old one stops
+    # Drop any stale webhook, then start polling with conflict retry.
+    # On Render, the old instance may keep polling for a few seconds after
+    # the new one starts — retry until the old instance fully stops.
     await bot.delete_webhook(drop_pending_updates=True)
-    bot_task = asyncio.create_task(dp.start_polling(bot))
+
+    async def polling_with_retry():
+        for attempt in range(1, 11):          # up to 10 attempts, ~50 s total
+            try:
+                await dp.start_polling(bot, handle_signals=False)
+                break                          # clean exit
+            except TelegramConflictError:
+                wait = attempt * 5
+                logging.warning(f"Polling conflict (attempt {attempt}), retrying in {wait}s…")
+                await asyncio.sleep(wait)
+        else:
+            logging.error("Could not acquire polling after 10 attempts — giving up.")
+
+    bot_task = asyncio.create_task(polling_with_retry())
 
     logging.info(f"✅ Dashboard → http://localhost:{PORT}/")
     logging.info(f"✅ API Docs  → http://localhost:{PORT}/docs")
