@@ -14,6 +14,7 @@ from pymongo import MongoClient, ReturnDocument
 from concurrent.futures import ThreadPoolExecutor
 from bson import ObjectId
 import re
+import certifi
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from typing import Tuple, Optional
@@ -615,7 +616,7 @@ async def main():
     global mongo_client, db, complaints_col, feedback_col, counters_col
 
     # Sync MongoClient — no asyncio loop binding whatsoever
-    mongo_client   = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    mongo_client   = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
     db             = mongo_client["grievance_bot"]
     complaints_col = db["complaints"]
     feedback_col   = db["feedback"]
