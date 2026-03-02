@@ -13,7 +13,6 @@ import pytz
 from pymongo import MongoClient, ReturnDocument
 from concurrent.futures import ThreadPoolExecutor
 from bson import ObjectId
-from transformers import pipeline
 import re
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -285,38 +284,69 @@ department_mapping = {
     "General": "General Grievance Cell"
 }
 
-# Load NLP Model for Classification (FASTER MODEL)
-classifier = pipeline("zero-shot-classification", model="valhalla/distilbart-mnli-12-3")
+# ─── Keyword-based NLP (no heavy deps — works within 512 MB RAM) ──────────────
 
-# Detect Invalid Complaints
+# Keywords mapped to categories (lowercase)
+_CATEGORY_KEYWORDS: list[tuple[str, list[str]]] = [
+    ("No Water Supply",               ["no water", "water supply", "water not coming", "no drinking water"]),
+    ("Pipeline Leakage",              ["pipe leak", "pipeline leak", "burst pipe", "water leaking"]),
+    ("Dirty Water Supply",            ["dirty water", "contaminated water", "muddy water", "bad water"]),
+    ("Blocked Drainage",              ["blocked drain", "clogged drain", "drain overflow", "sewage overflow", "open manhole", "manhole"]),
+    ("Road Maintenance & Potholes",   ["pothole", "road damage", "broken road", "road repair", "road condition", "bad road"]),
+    ("Electricity Issues & Power Cuts",["power cut", "no electricity", "electricity gone", "power outage", "voltage", "electric", "transformer"]),
+    ("Street Light Problems",          ["street light", "streetlight", "light not working", "dark road", "pole light"]),
+    ("Garbage Collection & Waste Management",["garbage", "waste", "trash", "dustbin", "litter", "dumping", "overflowing bin"]),
+    ("Public Toilet Maintenance",     ["public toilet", "toilet dirty", "toilet not working", "washroom"]),
+    ("Illegal Encroachments",         ["encroachment", "illegal construction", "footpath blocked", "hawker", "squatter"]),
+    ("Noise Pollution",               ["noise", "loud music", "horn", "construction noise", "sound pollution"]),
+    ("Corruption Complaints",         ["bribe", "corruption", "corrupt", "money demanded", "illegal money"]),
+    ("Traffic Violations",            ["traffic", "reckless driving", "illegal parking", "red light", "overloaded vehicle"]),
+    ("Public Health Hazards",         ["mosquito", "disease", "contaminated food", "health hazard", "hospital negligence"]),
+    ("School Infrastructure Problems",["school", "teacher", "classroom", "education", "college"]),
+    ("Animal Nuisance",               ["stray dog", "stray animal", "cow on road", "animal attack", "snake"]),
+    ("Police Misconduct",             ["police", "cop", "officer misconduct", "police brutality", "false arrest"]),
+    ("Ration & PDS Issues",           ["ration", "ration card", "pds", "food grain", "ration shop"]),
+    ("Land & Property Disputes",      ["land dispute", "property dispute", "encroach land", "boundary dispute"]),
+    ("Fire Hazards",                  ["fire", "fire hazard", "burning", "smoke", "flame"]),
+]
+
+_HIGH_KEYWORDS   = {"urgent", "emergency", "critical", "immediately", "danger", "life",
+                    "death", "murder", "fire", "accident", "assault", "kidnap", "flood"}
+_LOW_KEYWORDS    = {"suggestion", "feedback", "minor", "small", "request", "whenever"}
+
+
 def is_valid_complaint(text: str) -> bool:
-    return bool(re.search(r"[a-zA-Z]", text))  # Ensures the text contains valid words
+    return bool(re.search(r"[a-zA-Z]", text))
 
-# Classify Complaints
+
 def classify_complaint(text: str) -> str:
     if not is_valid_complaint(text):
         return "Invalid Complaint"
-
-    result = classifier(text, list(department_mapping.keys()))
-    confidence = result["scores"][0]
-    if confidence < 0.3:
-        return "Invalid Complaint"
-    return result["labels"][0]
-
-
-# Load sentiment analysis model
-sentiment_analyzer = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
+    lower = text.lower()
+    best_cat, best_score = "General", 0
+    for category, keywords in _CATEGORY_KEYWORDS:
+        score = sum(1 for kw in keywords if kw in lower)
+        if score > best_score:
+            best_score, best_cat = score, category
+    return best_cat
 
 
 def analyze_sentiment(text: str) -> Tuple[str, str]:
-    emergency_keywords = {"kidnapping", "murder", "fire", "accident", "assault"}
-    if any(kw in text.lower() for kw in emergency_keywords):
-        return "Very Negative", "High"
-    result = sentiment_analyzer(text)[0]
-    stars  = int(result["label"][0])
-    sentiment_map = {1: "Very Negative", 2: "Negative", 3: "Neutral", 4: "Positive", 5: "Very Positive"}
-    priority_map  = {1: "High", 2: "Medium", 3: "Medium", 4: "Low", 5: "Low"}
-    return sentiment_map.get(stars, "Neutral"), priority_map.get(stars, "Medium")
+    lower = text.lower()
+    words = set(re.findall(r"\w+", lower))
+    if words & _HIGH_KEYWORDS:
+        return "Negative", "High"
+    if words & _LOW_KEYWORDS:
+        return "Neutral", "Low"
+    # Negative sentiment keywords
+    neg = {"bad", "worst", "terrible", "horrible", "useless", "broken", "damaged",
+           "leak", "dirty", "blocked", "overflow", "dead", "no", "not", "never", "fail", "failed"}
+    neg_count = len(words & neg)
+    if neg_count >= 2:
+        return "Negative", "High"
+    if neg_count == 1:
+        return "Negative", "Medium"
+    return "Neutral", "Low"
 
 
 def auto_assign_department(category: str) -> str:
