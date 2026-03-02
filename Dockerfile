@@ -16,13 +16,6 @@ FROM base
 WORKDIR /app
 COPY . .
 
-# Pre-download HuggingFace models at build time so cold-starts are fast
-RUN python -c "\
-    from transformers import pipeline;\
-    pipeline('zero-shot-classification', model='valhalla/distilbart-mnli-12-3');\
-    pipeline('sentiment-analysis',       model='nlptown/bert-base-multilingual-uncased-sentiment');\
-    print('Models cached.')"
-
 EXPOSE 8000
 
 CMD ["python", "main.py"]
