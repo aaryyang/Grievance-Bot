@@ -102,251 +102,168 @@ if not os.path.exists("templates"):
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# ─── Department Mapping ───────────────────────────────────────────────────────
-department_mapping = {
-    # Water-Related Issues
-    "Water Supply Issues": "Water Department",
-    "No Water Supply": "Water Department",
-    "Low Water Pressure": "Water Department",
-    "Dirty Water Supply": "Water Department",
-    "Contaminated Water": "Water Department",
-    "Pipeline Leakage": "Water Department",
-    "Burst Water Pipe": "Water Department",
-    "Drinking Water Problem": "Water Department",
-
-    # Sewage & Drainage Issues
-    "Sewage & Drainage Problems": "Municipal Corporation",
-    "Blocked Drainage": "Municipal Corporation",
-    "Overflowing Sewage": "Municipal Corporation",
-    "Open Manholes": "Municipal Corporation",
-    "Drain Clogged": "Municipal Corporation",
-    "Foul Smell from Drain": "Municipal Corporation",
-    "Sewage Treatment Issue": "Municipal Corporation",
-
-    # Road & Infrastructure Issues
-    "Road Maintenance & Potholes": "Public Works Department",
-    "Potholes on Road": "Public Works Department",
-    "Damaged Road": "Public Works Department",
-    "Broken Footpath": "Public Works Department",
-    "Road Construction Problem": "Public Works Department",
-    "Illegal Road Digging": "Public Works Department",
-
-    # Electricity Issues
-    "Electricity Issues & Power Cuts": "Electricity Board",
-    "Frequent Power Cuts": "Electricity Board",
-    "Voltage Fluctuation": "Electricity Board",
-    "Electric Pole Damage": "Electricity Board",
-    "Transformer Failure": "Electricity Board",
-    "High Electricity Bill": "Electricity Board",
-    "New Electricity Connection": "Electricity Board",
-
-    # Street Light Issues
-    "Street Light Problems": "Municipal Corporation",
-    "Street Light Not Working": "Municipal Corporation",
-    "Flickering Street Light": "Municipal Corporation",
-    "Street Light Always On": "Municipal Corporation",
-    "Need More Street Lights": "Municipal Corporation",
-
-    # Garbage & Waste Management
-    "Garbage Collection & Waste Management": "Sanitation Department",
-    "Uncollected Garbage": "Sanitation Department",
-    "Overflowing Garbage Bin": "Sanitation Department",
-    "Illegal Dumping of Waste": "Sanitation Department",
-    "Burning of Garbage": "Sanitation Department",
-    "Need More Dustbins": "Sanitation Department",
-
-    # Public Toilet Issues
-    "Public Toilet Maintenance": "Sanitation Department",
-    "Dirty Public Toilet": "Sanitation Department",
-    "Public Toilet Not Working": "Sanitation Department",
-    "Need More Public Toilets": "Sanitation Department",
-
-    # Illegal Construction & Encroachments
-    "Illegal Encroachments": "Urban Development Authority",
-    "Illegal Construction": "Urban Development Authority",
-    "Encroachment on Public Property": "Urban Development Authority",
-    "Hawkers Blocking Road": "Urban Development Authority",
-
-    # Noise Pollution
-    "Noise Pollution": "Police Department",
-    "Loud Music Complaint": "Police Department",
-    "Vehicle Horn Noise": "Police Department",
-    "Factory Noise Pollution": "Police Department",
-    "Construction Noise Issue": "Police Department",
-
-    # Corruption & Bribery
-    "Corruption Complaints": "Anti-Corruption Bureau",
-    "Bribe Demand": "Anti-Corruption Bureau",
-    "Government Officer Taking Bribe": "Anti-Corruption Bureau",
-    "Corrupt Practices in Office": "Anti-Corruption Bureau",
-
-    # Traffic Violations
-    "Traffic Violations": "Traffic Police",
-    "Jumping Red Light": "Traffic Police",
-    "Illegal Parking": "Traffic Police",
-    "Reckless Driving": "Traffic Police",
-    "Overloaded Vehicle": "Traffic Police",
-    "Blocked Road Due to Traffic": "Traffic Police",
-
-    # Public Health Hazards
-    "Public Health Hazards": "Health Department",
-    "Contaminated Food Complaint": "Health Department",
-    "Mosquito Breeding Issue": "Health Department",
-    "Garbage Causing Disease": "Health Department",
-    "Hospital Negligence Complaint": "Health Department",
-
-    # Education & School Issues
-    "School Infrastructure Problems": "Education Department",
-    "Broken School Building": "Education Department",
-    "No Drinking Water in School": "Education Department",
-    "Lack of Teachers in School": "Education Department",
-
-    # Employment & Labor Issues
-    "Employment Grievances": "Labour & Employment Department",
-    "Unpaid Salary Complaint": "Labour & Employment Department",
-    "Unfair Dismissal Complaint": "Labour & Employment Department",
-    "Unsafe Workplace": "Labour & Employment Department",
-
-    # Internet & Mobile Issues
-    "Internet & Mobile Network Complaints": "Telecom Department",
-    "Slow Internet Speed": "Telecom Department",
-    "Call Drop Issue": "Telecom Department",
-    "No Network Coverage": "Telecom Department",
-
-    # Fire Safety & Emergencies
-    "Fire Emergency": "Fire Department",
-    "Building on Fire": "Fire Department",
-    "Fire Accident Report": "Fire Department",
-    "Smoke Coming from Building": "Fire Department",
-
-    # Environmental Issues
-    "Air Pollution Complaints": "Environmental Protection Agency",
-    "Factory Emitting Smoke": "Environmental Protection Agency",
-    "Burning of Waste": "Environmental Protection Agency",
-    "Poor Air Quality": "Environmental Protection Agency",
-
-    # Tree & Deforestation Issues
-    "Tree Cutting & Deforestation Complaints": "Forest Department",
-    "Illegal Tree Cutting": "Forest Department",
-    "Need More Trees in Area": "Forest Department",
-
-    # Public Transport Issues
-    "Railway Station & Train Issues": "Railway Department",
-    "Train Delay Complaint": "Railway Department",
-    "Unhygienic Railway Station": "Railway Department",
-    "Bus & Public Transport Complaints": "Transport Department",
-    "Overcrowded Bus Complaint": "Transport Department",
-    "Bus Not Stopping at Stops": "Transport Department",
-
-    # Cybercrime & Online Fraud
-    "Cybercrime & Online Fraud": "Cyber Crime Cell",
-    "Bank Fraud": "Cyber Crime Cell",
-    "Hacked Social Media Account": "Cyber Crime Cell",
-    "Online Scam Complaint": "Cyber Crime Cell",
-
-    # Consumer Rights Violations
-    "Consumer Rights Violations": "Consumer Protection Department",
-    "Fake Product Complaint": "Consumer Protection Department",
-    "Overpriced Product Complaint": "Consumer Protection Department",
-    "False Advertising Complaint": "Consumer Protection Department",
-
-    # Women & Child Safety
-    "Women & Child Safety": "Women & Child Welfare Department",
-    "Harassment Complaint": "Women & Child Welfare Department",
-    "Domestic Violence Complaint": "Women & Child Welfare Department",
-    "Child Labor Complaint": "Women & Child Welfare Department",
-
-    # Social Welfare & Senior Citizen Issues
-    "Senior Citizen Grievances": "Social Welfare Department",
-    "Elderly Neglect Complaint": "Social Welfare Department",
-    "Need Help for Senior Citizen": "Social Welfare Department",
-    "Homelessness & Shelter Issues": "Social Welfare Department",
-    "Need Homeless Shelter": "Social Welfare Department",
-
-    # Disaster Management & Relief
-    "Flood & Disaster Relief": "Disaster Management Department",
-    "Flooded Area Complaint": "Disaster Management Department",
-    "Earthquake Damage Report": "Disaster Management Department",
-
-    # Land & Property Issues
-    "Land Disputes & Property Issues": "Revenue Department",
-    "Illegal Land Grab": "Revenue Department",
-    "Property Ownership Dispute": "Revenue Department",
-
-    # Emergency Situations
-    "Murder": "Police Department",
-    "Kidnapping": "Police Department",
-    "Suicide Attempt": "Emergency Services",
-    "Accident Report": "Emergency Services",
-    "Medical Emergency": "Emergency Services",
-    "Emergency Helpline": "Emergency Services",
-
-    # Other Issues
-    "General Complaint": "General Grievance Cell",
-    "Other Issues": "General Grievance Cell",
-    "General": "General Grievance Cell"
+# ─── Unified Rules ───────────────────────────────────────────────────────────
+# Single source of truth: category → dept, base_priority, phrases (3 pts), words (1 pt)
+# Phrases are matched before words so multi-word specificity wins.
+_RULES: dict[str, dict] = {
+    # Water
+    "No Water Supply":       {"dept": "Water Department",                  "priority": "Medium",
+                              "phrases": ["no water", "water not coming", "no drinking water", "water supply"],
+                              "words":   ["water"]},
+    "Pipeline Leakage":      {"dept": "Water Department",                  "priority": "Medium",
+                              "phrases": ["pipe leak", "pipeline leak", "burst pipe", "water leaking"],
+                              "words":   []},
+    "Dirty Water Supply":    {"dept": "Water Department",                  "priority": "High",
+                              "phrases": ["dirty water", "contaminated water", "muddy water", "bad water"],
+                              "words":   []},
+    # Sewage
+    "Blocked Drainage":      {"dept": "Municipal Corporation",             "priority": "Medium",
+                              "phrases": ["blocked drain", "clogged drain", "drain overflow", "sewage overflow", "open manhole"],
+                              "words":   ["manhole", "sewage", "drainage"]},
+    # Road
+    "Road Maintenance & Potholes": {"dept": "Public Works Department",    "priority": "Medium",
+                              "phrases": ["road damage", "broken road", "road repair", "bad road"],
+                              "words":   ["pothole", "road"]},
+    # Electricity
+    "Electricity Issues & Power Cuts": {"dept": "Electricity Board",      "priority": "Medium",
+                              "phrases": ["power cut", "no electricity", "power outage", "voltage fluctuation"],
+                              "words":   ["electricity", "voltage", "transformer", "electric"]},
+    # Street Lights
+    "Street Light Problems": {"dept": "Municipal Corporation",             "priority": "Low",
+                              "phrases": ["street light", "light not working", "dark road", "pole light"],
+                              "words":   ["streetlight"]},
+    # Garbage
+    "Garbage Collection & Waste Management": {"dept": "Sanitation Department", "priority": "Low",
+                              "phrases": ["overflowing bin", "garbage collection", "illegal dumping", "burning garbage"],
+                              "words":   ["garbage", "waste", "trash", "dustbin", "litter"]},
+    # Public Toilet
+    "Public Toilet Maintenance": {"dept": "Sanitation Department",         "priority": "Low",
+                              "phrases": ["public toilet", "toilet dirty", "toilet not working"],
+                              "words":   ["washroom", "toilet"]},
+    # Encroachment
+    "Illegal Encroachments": {"dept": "Urban Development Authority",       "priority": "Medium",
+                              "phrases": ["illegal construction", "footpath blocked", "encroachment on"],
+                              "words":   ["encroachment", "hawker", "squatter"]},
+    # Noise
+    "Noise Pollution":       {"dept": "Police Department",                 "priority": "Low",
+                              "phrases": ["loud music", "construction noise", "sound pollution", "vehicle horn"],
+                              "words":   ["noise"]},
+    # Corruption
+    "Corruption Complaints": {"dept": "Anti-Corruption Bureau",            "priority": "High",
+                              "phrases": ["money demanded", "illegal money", "asked for bribe"],
+                              "words":   ["bribe", "corruption", "corrupt"]},
+    # Traffic
+    "Traffic Violations":    {"dept": "Traffic Police",                    "priority": "Medium",
+                              "phrases": ["reckless driving", "illegal parking", "red light", "overloaded vehicle"],
+                              "words":   ["traffic"]},
+    # Health
+    "Public Health Hazards": {"dept": "Health Department",                 "priority": "High",
+                              "phrases": ["contaminated food", "health hazard", "hospital negligence", "mosquito breeding"],
+                              "words":   ["disease", "mosquito"]},
+    # Education
+    "School Infrastructure Problems": {"dept": "Education Department",    "priority": "Medium",
+                              "phrases": ["no drinking water in school", "broken school", "lack of teachers"],
+                              "words":   ["school", "teacher", "classroom", "education"]},
+    # Animal
+    "Animal Nuisance":       {"dept": "Municipal Corporation",             "priority": "Medium",
+                              "phrases": ["stray dog", "stray animal", "cow on road", "animal attack"],
+                              "words":   ["snake", "animal"]},
+    # Police Misconduct
+    "Police Misconduct":     {"dept": "Police Department",                 "priority": "High",
+                              "phrases": ["officer misconduct", "police brutality", "false arrest"],
+                              "words":   ["misconduct"]},
+    # Ration
+    "Ration & PDS Issues":   {"dept": "Food Department",                   "priority": "Medium",
+                              "phrases": ["ration card", "ration shop", "food grain"],
+                              "words":   ["ration", "pds"]},
+    # Land
+    "Land & Property Disputes": {"dept": "Revenue Department",            "priority": "Medium",
+                              "phrases": ["land dispute", "property dispute", "land grab", "boundary dispute"],
+                              "words":   []},
+    # Fire
+    "Fire Hazards":          {"dept": "Fire Department",                   "priority": "High",
+                              "phrases": ["fire hazard", "building on fire", "fire accident", "smoke coming"],
+                              "words":   ["fire", "burning", "flame", "smoke"]},
+    # Cybercrime
+    "Cybercrime & Online Fraud": {"dept": "Cyber Crime Cell",             "priority": "High",
+                              "phrases": ["bank fraud", "online scam", "hacked account", "cyber crime"],
+                              "words":   ["fraud", "scam", "hacked"]},
+    # Women & Child
+    "Women & Child Safety":  {"dept": "Women & Child Welfare Department", "priority": "High",
+                              "phrases": ["domestic violence", "child labor", "sexual harassment", "harassment complaint"],
+                              "words":   ["harassment", "violence"]},
+    # Environment
+    "Air Pollution":         {"dept": "Environmental Protection Agency",   "priority": "Medium",
+                              "phrases": ["air pollution", "factory smoke", "poor air quality", "burning waste"],
+                              "words":   []},
+    # Transport
+    "Public Transport":      {"dept": "Transport Department",              "priority": "Low",
+                              "phrases": ["bus not stopping", "overcrowded bus", "train delay", "public transport"],
+                              "words":   ["bus", "train", "transport"]},
+    # ── Emergencies (base priority always High) ───────────────────────────────
+    "Kidnapping":            {"dept": "Police Department",                 "priority": "High",
+                              "phrases": ["missing person", "taken away", "been abducted", "child missing"],
+                              "words":   ["kidnap", "kidnapping", "abduct", "abduction"]},
+    "Murder":                {"dept": "Police Department",                 "priority": "High",
+                              "phrases": ["dead body", "found dead", "been killed", "shot dead"],
+                              "words":   ["murder", "homicide", "killed", "shooting", "stabbing"]},
+    "Suicide Attempt":       {"dept": "Emergency Services",                "priority": "High",
+                              "phrases": ["self harm", "want to die", "trying to kill", "about to jump"],
+                              "words":   ["suicide", "hanging", "overdose"]},
+    "Medical Emergency":     {"dept": "Emergency Services",                "priority": "High",
+                              "phrases": ["heart attack", "not breathing", "medical emergency", "lost consciousness"],
+                              "words":   ["unconscious", "collapsed", "stroke"]},
+    "Accident Report":       {"dept": "Emergency Services",                "priority": "High",
+                              "phrases": ["road accident", "vehicle accident", "major accident", "hit and run"],
+                              "words":   ["accident", "crash"]},
+    "Flood & Disaster Relief": {"dept": "Disaster Management Department", "priority": "High",
+                              "phrases": ["flood relief", "flooded area", "earthquake damage"],
+                              "words":   ["flood", "earthquake"]},
+    # Fallback
+    "General":               {"dept": "General Grievance Cell",            "priority": "Low",
+                              "phrases": [], "words": []},
 }
 
-# ─── Keyword-based NLP (no heavy deps — works within 512 MB RAM) ──────────────
+# Words that escalate any category's priority to High
+_URGENCY_WORDS = {
+    "urgent", "emergency", "immediately", "critical", "danger", "dying",
+    "bleeding", "sos", "help", "life", "death", "explosion", "bomb", "rape",
+}
 
-# Keywords mapped to categories (lowercase)
-_CATEGORY_KEYWORDS: list[tuple[str, list[str]]] = [
-    ("No Water Supply",               ["no water", "water supply", "water not coming", "no drinking water"]),
-    ("Pipeline Leakage",              ["pipe leak", "pipeline leak", "burst pipe", "water leaking"]),
-    ("Dirty Water Supply",            ["dirty water", "contaminated water", "muddy water", "bad water"]),
-    ("Blocked Drainage",              ["blocked drain", "clogged drain", "drain overflow", "sewage overflow", "open manhole", "manhole"]),
-    ("Road Maintenance & Potholes",   ["pothole", "road damage", "broken road", "road repair", "road condition", "bad road"]),
-    ("Electricity Issues & Power Cuts",["power cut", "no electricity", "electricity gone", "power outage", "voltage", "electric", "transformer"]),
-    ("Street Light Problems",          ["street light", "streetlight", "light not working", "dark road", "pole light"]),
-    ("Garbage Collection & Waste Management",["garbage", "waste", "trash", "dustbin", "litter", "dumping", "overflowing bin"]),
-    ("Public Toilet Maintenance",     ["public toilet", "toilet dirty", "toilet not working", "washroom"]),
-    ("Illegal Encroachments",         ["encroachment", "illegal construction", "footpath blocked", "hawker", "squatter"]),
-    ("Noise Pollution",               ["noise", "loud music", "horn", "construction noise", "sound pollution"]),
-    ("Corruption Complaints",         ["bribe", "corruption", "corrupt", "money demanded", "illegal money"]),
-    ("Traffic Violations",            ["traffic", "reckless driving", "illegal parking", "red light", "overloaded vehicle"]),
-    ("Public Health Hazards",         ["mosquito", "disease", "contaminated food", "health hazard", "hospital negligence"]),
-    ("School Infrastructure Problems",["school", "teacher", "classroom", "education", "college"]),
-    ("Animal Nuisance",               ["stray dog", "stray animal", "cow on road", "animal attack", "snake"]),
-    ("Police Misconduct",             ["police", "cop", "officer misconduct", "police brutality", "false arrest"]),
-    ("Ration & PDS Issues",           ["ration", "ration card", "pds", "food grain", "ration shop"]),
-    ("Land & Property Disputes",      ["land dispute", "property dispute", "encroach land", "boundary dispute"]),
-    ("Fire Hazards",                  ["fire", "fire hazard", "burning", "smoke", "flame"]),
-]
-
-_HIGH_KEYWORDS   = {"urgent", "emergency", "critical", "immediately", "danger", "life",
-                    "death", "murder", "fire", "accident", "assault", "kidnap", "flood"}
-_LOW_KEYWORDS    = {"suggestion", "feedback", "minor", "small", "request", "whenever"}
+_HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+_HF_LABELS  = [c for c in _RULES if c != "General"]
 
 
 def is_valid_complaint(text: str) -> bool:
     return bool(re.search(r"[a-zA-Z]", text))
 
 
-def classify_complaint(text: str) -> str:
-    if not is_valid_complaint(text):
-        return "Invalid Complaint"
-    lower = text.lower()
+def _keyword_score(lower: str) -> tuple[str, int]:
+    """Weighted keyword scan. Phrases = 3 pts, words = 1 pt. Single pass."""
     best_cat, best_score = "General", 0
-    for category, keywords in _CATEGORY_KEYWORDS:
-        score = sum(1 for kw in keywords if kw in lower)
+    for cat, rule in _RULES.items():
+        if cat == "General":
+            continue
+        score = (sum(3 for p in rule["phrases"] if p in lower) +
+                 sum(1 for w in rule["words"]   if w in lower))
         if score > best_score:
-            best_score, best_cat = score, category
-    return best_cat
+            best_score, best_cat = score, cat
+    return best_cat, best_score
 
 
-# Candidate labels sent to HF API — top-level category names
-_HF_LABELS = [cat for cat, _ in _CATEGORY_KEYWORDS]
-_HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
-
-
-async def classify_complaint(text: str) -> str:
-    """Classify using HF zero-shot API; falls back to keyword scorer."""
+async def classify_complaint(text: str) -> tuple[str, str, str]:
+    """Returns (category, department, priority).
+    Keyword scorer runs first — HF API only called when score == 0 (truly ambiguous)."""
     if not is_valid_complaint(text):
-        return "Invalid Complaint"
-    # ── Try HF Inference API ──────────────────────────────────────────────────
-    if HF_TOKEN:
+        return "Invalid Complaint", "General Grievance Cell", "Low"
+
+    lower = text.lower()
+    cat, score = _keyword_score(lower)
+
+    # Only escalate to HF when keywords give zero signal
+    if score == 0 and HF_TOKEN:
         try:
-            async with httpx.AsyncClient(timeout=8.0) as client:
+            async with httpx.AsyncClient(timeout=6.0) as client:
                 resp = await client.post(
                     _HF_API_URL,
                     headers={"Authorization": f"Bearer {HF_TOKEN}"},
@@ -354,43 +271,34 @@ async def classify_complaint(text: str) -> str:
                 )
                 if resp.status_code == 200:
                     data = resp.json()
-                    category = data["labels"][0]
-                    logging.info(f"HF classified: '{category}' (score {data['scores'][0]:.2f})")
-                    return category
-                logging.warning(f"HF API returned {resp.status_code}, falling back to keywords")
+                    cat = data["labels"][0]
+                    logging.info(f"HF classified (ambiguous): '{cat}' ({data['scores'][0]:.2f})")
+                else:
+                    logging.warning(f"HF API {resp.status_code}, using General")
         except Exception as e:
-            logging.warning(f"HF API error ({e}), falling back to keywords")
-    # ── Keyword fallback ──────────────────────────────────────────────────────
-    lower = text.lower()
-    best_cat, best_score = "General", 0
-    for category, keywords in _CATEGORY_KEYWORDS:
-        score = sum(1 for kw in keywords if kw in lower)
-        if score > best_score:
-            best_score, best_cat = score, category
-    logging.info(f"Keyword classified: '{best_cat}'")
-    return best_cat
+            logging.warning(f"HF API error: {e}")
+
+    rule     = _RULES.get(cat, _RULES["General"])
+    dept     = rule["dept"]
+    priority = rule["priority"]
+
+    # Urgency escalation — any category can be bumped to High
+    if set(re.findall(r"\w+", lower)) & _URGENCY_WORDS:
+        priority = "High"
+
+    logging.info(f"Classified: '{cat}' | {dept} | {priority} (kw_score={score})")
+    return cat, dept, priority
 
 
-def analyze_sentiment(text: str) -> Tuple[str, str]:
-    lower = text.lower()
-    words = set(re.findall(r"\w+", lower))
-    if words & _HIGH_KEYWORDS:
-        return "Negative", "High"
-    if words & _LOW_KEYWORDS:
-        return "Neutral", "Low"
-    # Negative sentiment keywords
+def analyze_sentiment(text: str, priority: str) -> str:
+    """Sentiment derived from priority + negative word cues."""
+    if priority == "High":
+        return "Negative"
     neg = {"bad", "worst", "terrible", "horrible", "useless", "broken", "damaged",
-           "leak", "dirty", "blocked", "overflow", "dead", "no", "not", "never", "fail", "failed"}
-    neg_count = len(words & neg)
-    if neg_count >= 2:
-        return "Negative", "High"
-    if neg_count == 1:
-        return "Negative", "Medium"
-    return "Neutral", "Low"
-
-
-def auto_assign_department(category: str) -> str:
-    return department_mapping.get(category, "General Grievance Cell")
+           "dirty", "blocked", "overflow", "no", "not", "never", "fail", "failed"}
+    if set(re.findall(r"\w+", text.lower())) & neg:
+        return "Negative"
+    return "Neutral"
 
 
 # ─── Telegram Bot ─────────────────────────────────────────────────────────────
@@ -411,13 +319,12 @@ async def log_complaint(message: types.Message):
         text = parts[1].strip()
         await message.reply("🕐 Processing your complaint…")
 
-        category = await classify_complaint(text)
+        category, department, priority = await classify_complaint(text)
         if category == "Invalid Complaint":
-            await message.reply("❌ Your complaint is invalid. Please provide a real issue.")
+            await message.reply("\u274c Your complaint is invalid. Please provide a real issue.")
             return
 
-        sentiment, priority = analyze_sentiment(text)
-        department   = auto_assign_department(category)
+        sentiment    = analyze_sentiment(text, priority)
         ist          = pytz.timezone("Asia/Kolkata")
         timestamp    = datetime.now(ist).strftime("%Y-%m-%d %H:%M:%S")
         complaint_id = await _db(lambda: next_seq("complaints"))

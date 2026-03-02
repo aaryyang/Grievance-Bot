@@ -1,114 +1,309 @@
 ﻿<!DOCTYPE html>
 <html lang="en" id="html">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Grievance Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     /* ── Tokens ── */
     :root {
-      --bg:       #f1f5f9;
-      --surface:  #ffffff;
-      --border:   #e2e8f0;
-      --text:     #1e293b;
-      --muted:    #64748b;
-      --accent:   #6366f1;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --accent: #6366f1;
       --accent-h: #4f46e5;
-      --row-h:    #f8fafc;
+      --row-h: #f8fafc;
       --input-bg: #ffffff;
-      --thead:    #f8fafc;
-      --nav-bg:   #ffffff;
-    }
-    .dark {
-      --bg:       #0f172a;
-      --surface:  #1e293b;
-      --border:   #334155;
-      --text:     #e2e8f0;
-      --muted:    #94a3b8;
-      --row-h:    #263347;
-      --input-bg: #1e293b;
-      --thead:    #172032;
-      --nav-bg:   #1e293b;
+      --thead: #f8fafc;
+      --nav-bg: #ffffff;
     }
 
-    body { font-family: system-ui, -apple-system, sans-serif;
-           background: var(--bg); color: var(--text); transition: background .2s, color .2s; }
+    .dark {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --row-h: #263347;
+      --input-bg: #1e293b;
+      --thead: #172032;
+      --nav-bg: #1e293b;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background .2s, color .2s;
+    }
 
     /* ── Nav ── */
-    #nav { background: var(--nav-bg); border-bottom: 1px solid var(--border);
-           padding: 0 24px; height: 56px; display: flex; align-items: center;
-           justify-content: space-between; position: sticky; top: 0; z-index: 20;
-           transition: background .2s, border-color .2s; }
-    #nav .brand { display: flex; align-items: center; gap: 10px; }
-    #nav .brand-icon { background: var(--accent); border-radius: 8px; width: 32px; height: 32px;
-                       display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    #nav .brand-name { font-weight: 700; font-size: 15px; }
-    #nav .nav-right { display: flex; align-items: center; gap: 10px; }
-    #ts { font-size: 12px; color: var(--muted); }
+    #nav {
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      transition: background .2s, border-color .2s;
+    }
+
+    #nav .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #nav .brand-icon {
+      background: var(--accent);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #nav .brand-name {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    #nav .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #ts {
+      font-size: 12px;
+      color: var(--muted);
+    }
 
     /* ── Cards ── */
-    .card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
-            padding: 20px; transition: background .2s, border-color .2s; }
+    .card {
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      transition: background .2s, border-color .2s;
+    }
 
     /* ── Buttons ── */
-    .btn { padding: 6px 13px; border-radius: 7px; font-size: 12px; font-weight: 600;
-           cursor: pointer; border: none; transition: opacity .15s; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
-    .btn-blue  { background: var(--accent); color: #fff; }
-    .btn-blue:hover:not(:disabled) { background: var(--accent-h); }
-    .btn-ghost { background: var(--border); color: var(--muted); }
-    .btn-ghost:hover:not(:disabled) { opacity: .8; }
-    .btn-green { background: #dcfce7; color: #15803d; }
-    .btn-green:hover:not(:disabled) { background: #bbf7d0; }
-    .btn-red   { background: #fee2e2; color: #b91c1c; }
-    .btn-red:hover:not(:disabled)   { background: #fecaca; }
+    .btn {
+      padding: 6px 13px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s;
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .btn-blue {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-blue:hover:not(:disabled) {
+      background: var(--accent-h);
+    }
+
+    .btn-ghost {
+      background: var(--border);
+      color: var(--muted);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      opacity: .8;
+    }
+
+    .btn-green {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .btn-green:hover:not(:disabled) {
+      background: #bbf7d0;
+    }
+
+    .btn-red {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .btn-red:hover:not(:disabled) {
+      background: #fecaca;
+    }
 
     /* dark-aware action buttons */
-    .dark .btn-green { background: #14532d; color: #86efac; }
-    .dark .btn-green:hover:not(:disabled) { background: #166534; }
-    .dark .btn-red   { background: #450a0a; color: #fca5a5; }
-    .dark .btn-red:hover:not(:disabled)   { background: #7f1d1d; }
+    .dark .btn-green {
+      background: #14532d;
+      color: #86efac;
+    }
+
+    .dark .btn-green:hover:not(:disabled) {
+      background: #166534;
+    }
+
+    .dark .btn-red {
+      background: #450a0a;
+      color: #fca5a5;
+    }
+
+    .dark .btn-red:hover:not(:disabled) {
+      background: #7f1d1d;
+    }
 
     /* ── Dark mode toggle ── */
-    #dm-btn { width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
-              border: 1px solid var(--border); background: var(--surface);
-              display: flex; align-items: center; justify-content: center;
-              font-size: 17px; transition: background .2s; }
-    #dm-btn:hover { background: var(--border); }
+    #dm-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      transition: background .2s;
+    }
+
+    #dm-btn:hover {
+      background: var(--border);
+    }
 
     /* ── Tabs ── */
-    .tab { padding: 6px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
-           cursor: pointer; border: none; background: transparent; color: var(--muted); }
-    .tab.active { background: var(--accent); color: #fff; }
+    .tab {
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
 
     /* ── Badges ── */
-    .badge { display: inline-block; padding: 2px 9px; border-radius: 99px;
-             font-size: 11px; font-weight: 600; }
-    .b-pending  { background:#fef9c3; color:#a16207; }
-    .b-resolved { background:#dcfce7; color:#15803d; }
-    .b-high     { background:#fee2e2; color:#b91c1c; }
-    .b-medium   { background:#ffedd5; color:#c2410c; }
-    .b-low      { background:#dbeafe; color:#1d4ed8; }
-    .dark .b-pending  { background:#422006; color:#fde68a; }
-    .dark .b-resolved { background:#14532d; color:#86efac; }
-    .dark .b-high     { background:#450a0a; color:#fca5a5; }
-    .dark .b-medium   { background:#431407; color:#fdba74; }
-    .dark .b-low      { background:#1e3a5f; color:#93c5fd; }
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .b-pending {
+      background: #fef9c3;
+      color: #a16207;
+    }
+
+    .b-resolved {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .b-high {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .b-medium {
+      background: #ffedd5;
+      color: #c2410c;
+    }
+
+    .b-low {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .dark .b-pending {
+      background: #422006;
+      color: #fde68a;
+    }
+
+    .dark .b-resolved {
+      background: #14532d;
+      color: #86efac;
+    }
+
+    .dark .b-high {
+      background: #450a0a;
+      color: #fca5a5;
+    }
+
+    .dark .b-medium {
+      background: #431407;
+      color: #fdba74;
+    }
+
+    .dark .b-low {
+      background: #1e3a5f;
+      color: #93c5fd;
+    }
 
     /* ── Table ── */
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase;
-         letter-spacing: .05em; color: var(--muted); padding: 10px 14px;
-         background: var(--thead); }
-    td { padding: 10px 14px; font-size: 13px; color: var(--text);
-         border-top: 1px solid var(--border); vertical-align: middle; }
-    tr:hover td { background: var(--row-h); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      padding: 10px 14px;
+      background: var(--thead);
+    }
+
+    td {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--text);
+      border-top: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: var(--row-h);
+    }
 
     /* ── Inputs ── */
-    input[type=text], select {
+    input[type=text],
+    select {
       height: 34px;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -119,11 +314,16 @@
       color: var(--text);
       transition: border-color .15s;
     }
-    input[type=text]:focus, select:focus {
+
+    input[type=text]:focus,
+    select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
     }
-    input[type=text]::placeholder { color: var(--muted); }
+
+    input[type=text]::placeholder {
+      color: var(--muted);
+    }
 
     /* ── Filter bar ── */
     .filter-bar {
@@ -134,397 +334,500 @@
       flex-wrap: wrap;
       border-bottom: 1px solid var(--border);
     }
-    .filter-bar input[type=text] { width: 210px; }
+
+    .filter-bar input[type=text] {
+      width: 210px;
+    }
 
     /* ── Pagination ── */
-    .pag { padding: 10px 16px; display: flex; justify-content: space-between;
-           align-items: center; border-top: 1px solid var(--border); }
-    #pinfo { font-size: 12px; color: var(--muted); }
+    .pag {
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+    }
+
+    #pinfo {
+      font-size: 12px;
+      color: var(--muted);
+    }
 
     /* ── Modal ── */
-    #modal { display: none; position: fixed; inset: 0;
-             background: rgba(0,0,0,.45); z-index: 50;
-             align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: var(--surface); border-radius: 14px; max-width: 520px; width: 100%;
-                 padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.3);
-                 border: 1px solid var(--border); }
-    .modal-row { display: flex; gap: 10px; font-size: 13px; padding: 5px 0;
-                 border-bottom: 1px solid var(--border); }
-    .modal-row:last-child { border-bottom: none; }
-    .modal-key { font-weight: 600; color: var(--muted); min-width: 90px; flex-shrink: 0; }
+    #modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border-radius: 14px;
+      max-width: 520px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+      border: 1px solid var(--border);
+    }
+
+    .modal-row {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-row:last-child {
+      border-bottom: none;
+    }
+
+    .modal-key {
+      font-weight: 600;
+      color: var(--muted);
+      min-width: 90px;
+      flex-shrink: 0;
+    }
 
     /* ── Toast ── */
-    #toast { position: fixed; bottom: 24px; right: 24px; padding: 10px 18px;
-             border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff;
-             display: none; z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,.2); }
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      display: none;
+      z-index: 999;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .2);
+    }
 
     /* ── Misc ── */
     .section-label {
-      font-size: 12px; font-weight: 600; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 12px;
     }
-    .stat-icon { border-radius: 10px; width: 44px; height: 44px; flex-shrink: 0;
-                 display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .overflow-x { overflow-x: auto; }
-    .ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .stat-icon {
+      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .overflow-x {
+      overflow-x: auto;
+    }
+
+    .ellipsis {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   </style>
 </head>
+
 <body>
 
-<!-- ── Nav ── -->
-<nav id="nav">
-  <div class="brand">
-    <div class="brand-icon">
-      <svg width="18" height="18" fill="none" stroke="#fff" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-      </svg>
-    </div>
-    <span class="brand-name">Grievance Admin</span>
-  </div>
-  <div class="nav-right">
-    <span id="ts"></span>
-    <button class="btn btn-ghost" onclick="loadAll()">↻ Refresh</button>
-    <button id="dm-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
-  </div>
-</nav>
-
-<!-- ── Main ── -->
-<div style="max-width:1320px; margin:0 auto; padding:24px; display:flex; flex-direction:column; gap:20px;">
-
-  <!-- Stat Cards -->
-  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px;">
-    <div class="card" style="display:flex; align-items:center; gap:14px;">
-      <div class="stat-icon" style="background:#eef2ff;">📋</div>
-      <div>
-        <div class="section-label" style="margin:0 0 2px;">Total</div>
-        <div id="s-total" style="font-size:28px; font-weight:700;">—</div>
+  <!-- ── Nav ── -->
+  <nav id="nav">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" fill="none" stroke="#fff" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
       </div>
+      <span class="brand-name">Grievance Admin</span>
     </div>
-    <div class="card" style="display:flex; align-items:center; gap:14px;">
-      <div class="stat-icon" style="background:#fefce8;">⏳</div>
-      <div>
-        <div class="section-label" style="margin:0 0 2px;">Pending</div>
-        <div id="s-pending" style="font-size:28px; font-weight:700; color:#a16207;">—</div>
-      </div>
+    <div class="nav-right">
+      <span id="ts"></span>
+      <button class="btn btn-ghost" onclick="loadAll()">↻ Refresh</button>
+      <button id="dm-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
     </div>
-    <div class="card" style="display:flex; align-items:center; gap:14px;">
-      <div class="stat-icon" style="background:#f0fdf4;">✅</div>
-      <div>
-        <div class="section-label" style="margin:0 0 2px;">Resolved</div>
-        <div id="s-resolved" style="font-size:28px; font-weight:700; color:#15803d;">—</div>
-      </div>
-    </div>
-    <div class="card" style="display:flex; align-items:center; gap:14px;">
-      <div class="stat-icon" style="background:#fff1f2;">🔴</div>
-      <div>
-        <div class="section-label" style="margin:0 0 2px;">High Priority</div>
-        <div id="s-high" style="font-size:28px; font-weight:700; color:#b91c1c;">—</div>
-      </div>
-    </div>
-  </div>
+  </nav>
 
-  <!-- Charts -->
-  <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:14px;">
-    <div class="card">
-      <div class="section-label">Top Categories</div>
-      <canvas id="c-cat" height="175"></canvas>
-    </div>
-    <div class="card">
-      <div class="section-label">Status</div>
-      <canvas id="c-status" height="175"></canvas>
-    </div>
-    <div class="card">
-      <div class="section-label">Priority</div>
-      <canvas id="c-priority" height="175"></canvas>
-    </div>
-  </div>
+  <!-- ── Main ── -->
+  <div style="max-width:1320px; margin:0 auto; padding:24px; display:flex; flex-direction:column; gap:20px;">
 
-  <!-- Tabs -->
-  <div style="display:flex; gap:6px;">
-    <button class="tab active" id="tab-c" onclick="switchTab('c')">Complaints</button>
-    <button class="tab"        id="tab-f" onclick="switchTab('f')">Feedback</button>
-  </div>
-
-  <!-- ── Complaints Panel ── -->
-  <div id="panel-c" class="card" style="padding:0; overflow:hidden;">
-    <div class="filter-bar">
-      <input type="text" id="q" placeholder="Search complaints…" oninput="applyFilter()"/>
-      <select id="fs" onchange="applyFilter()">
-        <option value="">All Status</option>
-        <option>Pending</option>
-        <option>Resolved</option>
-      </select>
-      <select id="fp" onchange="applyFilter()">
-        <option value="">All Priority</option>
-        <option>High</option>
-        <option>Medium</option>
-        <option>Low</option>
-      </select>
-      <select id="fd" onchange="applyFilter()">
-        <option value="">All Departments</option>
-      </select>
-      <button class="btn btn-ghost" onclick="resetFilters()">Reset</button>
-    </div>
-    <div class="overflow-x">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th>Complaint</th><th>Category</th>
-            <th>Dept.</th><th>Priority</th><th>Status</th><th>Date</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Loading…</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="pag">
-      <span id="pinfo"></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-ghost" id="pbtn" onclick="pg(-1)">← Prev</button>
-        <button class="btn btn-ghost" id="nbtn" onclick="pg(1)">Next →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Feedback Panel ── -->
-  <div id="panel-f" style="display:none; display:none;">
-    <!-- Summary row -->
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px;">
-      <div class="card" style="display:flex;align-items:center;gap:14px;">
-        <div class="stat-icon" style="background:#eef2ff;">💬</div>
+    <!-- Stat Cards -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px;">
+      <div class="card" style="display:flex; align-items:center; gap:14px;">
+        <div class="stat-icon" style="background:#eef2ff;">📋</div>
         <div>
-          <div class="section-label" style="margin:0 0 2px;">Total Feedback</div>
-          <div id="fb-total" style="font-size:24px;font-weight:700;">—</div>
+          <div class="section-label" style="margin:0 0 2px;">Total</div>
+          <div id="s-total" style="font-size:28px; font-weight:700;">—</div>
         </div>
       </div>
-      <div class="card" style="display:flex;align-items:center;gap:14px;">
-        <div class="stat-icon" style="background:#f0fdf4;">😊</div>
+      <div class="card" style="display:flex; align-items:center; gap:14px;">
+        <div class="stat-icon" style="background:#fefce8;">⏳</div>
         <div>
-          <div class="section-label" style="margin:0 0 2px;">Positive</div>
-          <div id="fb-pos" style="font-size:24px;font-weight:700;color:#15803d;">—</div>
+          <div class="section-label" style="margin:0 0 2px;">Pending</div>
+          <div id="s-pending" style="font-size:28px; font-weight:700; color:#a16207;">—</div>
         </div>
       </div>
-      <div class="card" style="display:flex;align-items:center;gap:14px;">
-        <div class="stat-icon" style="background:#fff1f2;">😠</div>
+      <div class="card" style="display:flex; align-items:center; gap:14px;">
+        <div class="stat-icon" style="background:#f0fdf4;">✅</div>
         <div>
-          <div class="section-label" style="margin:0 0 2px;">Negative</div>
-          <div id="fb-neg" style="font-size:24px;font-weight:700;color:#b91c1c;">—</div>
+          <div class="section-label" style="margin:0 0 2px;">Resolved</div>
+          <div id="s-resolved" style="font-size:28px; font-weight:700; color:#15803d;">—</div>
+        </div>
+      </div>
+      <div class="card" style="display:flex; align-items:center; gap:14px;">
+        <div class="stat-icon" style="background:#fff1f2;">🔴</div>
+        <div>
+          <div class="section-label" style="margin:0 0 2px;">High Priority</div>
+          <div id="s-high" style="font-size:28px; font-weight:700; color:#b91c1c;">—</div>
         </div>
       </div>
     </div>
-    <!-- Search -->
-    <div class="card" style="padding:0;overflow:hidden;">
+
+    <!-- Charts -->
+    <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:14px;">
+      <div class="card">
+        <div class="section-label">Top Categories</div>
+        <canvas id="c-cat" height="175"></canvas>
+      </div>
+      <div class="card">
+        <div class="section-label">Status</div>
+        <canvas id="c-status" height="175"></canvas>
+      </div>
+      <div class="card">
+        <div class="section-label">Priority</div>
+        <canvas id="c-priority" height="175"></canvas>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex; gap:6px;">
+      <button class="tab active" id="tab-c" onclick="switchTab('c')">Complaints</button>
+      <button class="tab" id="tab-f" onclick="switchTab('f')">Feedback</button>
+    </div>
+
+    <!-- ── Complaints Panel ── -->
+    <div id="panel-c" class="card" style="padding:0; overflow:hidden;">
       <div class="filter-bar">
-        <input type="text" id="fq" placeholder="Search feedback…" oninput="renderFeedback()"/>
+        <input type="text" id="q" placeholder="Search complaints…" oninput="applyFilter()" />
+        <select id="fs" onchange="applyFilter()">
+          <option value="">All Status</option>
+          <option>Pending</option>
+          <option>Resolved</option>
+        </select>
+        <select id="fp" onchange="applyFilter()">
+          <option value="">All Priority</option>
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+        <select id="fd" onchange="applyFilter()">
+          <option value="">All Departments</option>
+        </select>
+        <button class="btn btn-ghost" onclick="resetFilters()">Reset</button>
       </div>
       <div class="overflow-x">
         <table>
           <thead>
-            <tr><th>#</th><th>User ID</th><th>Username</th><th>Message</th><th>Sentiment</th><th>Time</th></tr>
+            <tr>
+              <th>#</th>
+              <th>Complaint</th>
+              <th>Category</th>
+              <th>Dept.</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
           </thead>
-          <tbody id="fbody">
-            <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted);">Loading…</td></tr>
+          <tbody id="tbody">
+            <tr>
+              <td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Loading…</td>
+            </tr>
           </tbody>
         </table>
       </div>
+      <div class="pag">
+        <span id="pinfo"></span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" id="pbtn" onclick="pg(-1)">← Prev</button>
+          <button class="btn btn-ghost" id="nbtn" onclick="pg(1)">Next →</button>
+        </div>
+      </div>
     </div>
-  </div>
 
-</div><!-- /main -->
+    <!-- ── Feedback Panel ── -->
+    <div id="panel-f" style="display:none; display:none;">
+      <!-- Summary row -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px;">
+        <div class="card" style="display:flex;align-items:center;gap:14px;">
+          <div class="stat-icon" style="background:#eef2ff;">💬</div>
+          <div>
+            <div class="section-label" style="margin:0 0 2px;">Total Feedback</div>
+            <div id="fb-total" style="font-size:24px;font-weight:700;">—</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;align-items:center;gap:14px;">
+          <div class="stat-icon" style="background:#f0fdf4;">😊</div>
+          <div>
+            <div class="section-label" style="margin:0 0 2px;">Positive</div>
+            <div id="fb-pos" style="font-size:24px;font-weight:700;color:#15803d;">—</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;align-items:center;gap:14px;">
+          <div class="stat-icon" style="background:#fff1f2;">😠</div>
+          <div>
+            <div class="section-label" style="margin:0 0 2px;">Negative</div>
+            <div id="fb-neg" style="font-size:24px;font-weight:700;color:#b91c1c;">—</div>
+          </div>
+        </div>
+      </div>
+      <!-- Search -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="filter-bar">
+          <input type="text" id="fq" placeholder="Search feedback…" oninput="renderFeedback()" />
+        </div>
+        <div class="overflow-x">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>Message</th>
+                <th>Sentiment</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="fbody">
+              <tr>
+                <td colspan="6" style="text-align:center;padding:32px;color:var(--muted);">Loading…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-<!-- ── Modal ── -->
-<div id="modal" onclick="if(event.target===this)closeModal()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  </div><!-- /main -->
+
+  <!-- ── Modal ── -->
+  <div id="modal" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
             z-index:50;align-items:center;justify-content:center;padding:20px;">
-  <div class="modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <span style="font-weight:700;font-size:15px;">Complaint Detail</span>
-      <button onclick="closeModal()" style="background:none;border:none;font-size:22px;
+    <div class="modal-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <span style="font-weight:700;font-size:15px;">Complaint Detail</span>
+        <button onclick="closeModal()" style="background:none;border:none;font-size:22px;
               cursor:pointer;color:var(--muted);line-height:1;">×</button>
+      </div>
+      <div id="mdl"></div>
     </div>
-    <div id="mdl"></div>
   </div>
-</div>
 
-<div id="toast"></div>
+  <div id="toast"></div>
 
-<script>
-// ── State ─────────────────────────────────────────────────────────────────
-let complaints = [], filtered = [], feedbacks = [], page = 1;
-const PP = 20;
-const CH = {};
+  <script>
+    // ── State ─────────────────────────────────────────────────────────────────
+    let complaints = [], filtered = [], feedbacks = [], page = 1;
+    const PP = 20;
+    const CH = {};
 
-// ── Helpers ───────────────────────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const COLORS = ['#6366f1','#06b6d4','#10b981','#f59e0b','#ef4444',
-                '#8b5cf6','#14b8a6','#f97316','#3b82f6','#ec4899'];
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ef4444',
+      '#8b5cf6', '#14b8a6', '#f97316', '#3b82f6', '#ec4899'];
 
-// ── Dark mode ─────────────────────────────────────────────────────────────
-function initDark() {
-  const dark = localStorage.getItem('dark') === '1';
-  document.getElementById('html').classList.toggle('dark', dark);
-  $('dm-btn').textContent = dark ? '☀️' : '🌙';
-}
-function toggleDark() {
-  const el = document.getElementById('html');
-  const on = el.classList.toggle('dark');
-  localStorage.setItem('dark', on ? '1' : '0');
-  $('dm-btn').textContent = on ? '☀️' : '🌙';
-  // Rebuild charts so grid colours update
-  loadStats();
-}
-initDark();
-
-// ── Charts ────────────────────────────────────────────────────────────────
-function isDark() { return document.getElementById('html').classList.contains('dark'); }
-function tickColor() { return isDark() ? '#94a3b8' : '#64748b'; }
-function gridColor() { return isDark() ? '#1e293b' : '#f1f5f9'; }
-function borderC()   { return isDark() ? '#1e293b' : '#fff'; }
-
-function doughnut(id, labels, data, colors) {
-  const ctx = $(id).getContext('2d');
-  if (CH[id]) CH[id].destroy();
-  CH[id] = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels, datasets:[{ data, backgroundColor: colors || COLORS,
-              borderWidth: 3, borderColor: borderC() }] },
-    options: { cutout: '68%', plugins: { legend: { position: 'bottom',
-        labels: { font:{size:11}, padding:10, color: tickColor() } } } }
-  });
-}
-
-function barChart(id, labels, data) {
-  const ctx = $(id).getContext('2d');
-  if (CH[id]) CH[id].destroy();
-  CH[id] = new Chart(ctx, {
-    type: 'bar',
-    data: { labels, datasets:[{ data, backgroundColor: COLORS,
-              borderRadius: 5, borderSkipped: false }] },
-    options: {
-      indexAxis: 'y',
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks:{color: tickColor(), font:{size:11}}, grid:{color: gridColor()} },
-        y: { ticks:{color: tickColor(), font:{size:11}}, grid:{display: false} }
-      }
+    // ── Dark mode ─────────────────────────────────────────────────────────────
+    function initDark() {
+      const dark = localStorage.getItem('dark') === '1';
+      document.getElementById('html').classList.toggle('dark', dark);
+      $('dm-btn').textContent = dark ? '☀️' : '🌙';
     }
-  });
-}
+    function toggleDark() {
+      const el = document.getElementById('html');
+      const on = el.classList.toggle('dark');
+      localStorage.setItem('dark', on ? '1' : '0');
+      $('dm-btn').textContent = on ? '☀️' : '🌙';
+      // Rebuild charts so grid colours update
+      loadStats();
+    }
+    initDark();
 
-// ── Load ──────────────────────────────────────────────────────────────────
-async function loadAll() {
-  $('ts').textContent = 'Updated ' + new Date().toLocaleTimeString();
-  await Promise.all([loadStats(), loadComplaints(), loadFeedbackData()]);
-}
+    // ── Charts ────────────────────────────────────────────────────────────────
+    function isDark() { return document.getElementById('html').classList.contains('dark'); }
+    function tickColor() { return isDark() ? '#94a3b8' : '#64748b'; }
+    function gridColor() { return isDark() ? '#1e293b' : '#f1f5f9'; }
+    function borderC() { return isDark() ? '#1e293b' : '#fff'; }
 
-async function loadStats() {
-  try {
-    const d = await fetch('/api/stats').then(r => r.json());
-    $('s-total').textContent    = d.summary.total;
-    $('s-pending').textContent  = d.summary.pending;
-    $('s-resolved').textContent = d.summary.resolved;
-    $('s-high').textContent     = d.summary.high_priority;
+    function doughnut(id, labels, data, colors) {
+      const ctx = $(id).getContext('2d');
+      if (CH[id]) CH[id].destroy();
+      CH[id] = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels, datasets: [{
+            data, backgroundColor: colors || COLORS,
+            borderWidth: 3, borderColor: borderC()
+          }]
+        },
+        options: {
+          cutout: '68%', plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { size: 11 }, padding: 10, color: tickColor() }
+            }
+          }
+        }
+      });
+    }
 
-    doughnut('c-status',
-      ['Pending','Resolved'],
-      [d.summary.pending, d.summary.resolved],
-      ['#fbbf24','#34d399']);
+    function barChart(id, labels, data) {
+      const ctx = $(id).getContext('2d');
+      if (CH[id]) CH[id].destroy();
+      CH[id] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels, datasets: [{
+            data, backgroundColor: COLORS,
+            borderRadius: 5, borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: tickColor(), font: { size: 11 } }, grid: { color: gridColor() } },
+            y: { ticks: { color: tickColor(), font: { size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
 
-    const pm = Object.fromEntries((d.by_priority||[]).map(x=>[x.label, x.count]));
-    doughnut('c-priority',
-      ['High','Medium','Low'],
-      [pm.High||0, pm.Medium||0, pm.Low||0],
-      ['#f87171','#fb923c','#60a5fa']);
+    // ── Load ──────────────────────────────────────────────────────────────────
+    async function loadAll() {
+      $('ts').textContent = 'Updated ' + new Date().toLocaleTimeString();
+      await Promise.all([loadStats(), loadComplaints(), loadFeedbackData()]);
+    }
 
-    if ((d.by_category||[]).length)
-      barChart('c-cat', d.by_category.map(x=>x.label), d.by_category.map(x=>x.count));
-  } catch(e) { console.error('stats', e); }
-}
+    async function loadStats() {
+      try {
+        const d = await fetch('/api/stats').then(r => r.json());
+        $('s-total').textContent = d.summary.total;
+        $('s-pending').textContent = d.summary.pending;
+        $('s-resolved').textContent = d.summary.resolved;
+        $('s-high').textContent = d.summary.high_priority;
 
-async function loadComplaints() {
-  try {
-    const d = await fetch('/api/complaints?per_page=100').then(r => r.json());
-    complaints = d.data || [];
-    // Populate dept dropdown
-    const depts = [...new Set(complaints.map(c=>c.department).filter(Boolean))].sort();
-    const sel = $('fd'), cur = sel.value;
-    sel.innerHTML = '<option value="">All Departments</option>' +
-      depts.map(d => `<option${d===cur?' selected':''}>${esc(d)}</option>`).join('');
-    applyFilter();
-  } catch(e) { console.error('complaints', e); }
-}
+        doughnut('c-status',
+          ['Pending', 'Resolved'],
+          [d.summary.pending, d.summary.resolved],
+          ['#fbbf24', '#34d399']);
 
-async function loadFeedbackData() {
-  try {
-    const d = await fetch('/api/feedbacks').then(r => r.json());
-    feedbacks = d.data || [];
-    // Counts (crude sentiment from message length / keyword)
-    $('fb-total').textContent = feedbacks.length || 0;
-    const pos = feedbacks.filter(f => /good|great|thank|excellent|helpful|resolved|happy/i.test(f.message||'')).length;
-    const neg = feedbacks.filter(f => /bad|poor|worst|useless|no help|terrible|awful/i.test(f.message||'')).length;
-    $('fb-pos').textContent = pos;
-    $('fb-neg').textContent = neg;
-    renderFeedback();
-  } catch(e) { console.error('feedbacks', e); }
-}
+        const pm = Object.fromEntries((d.by_priority || []).map(x => [x.label, x.count]));
+        doughnut('c-priority',
+          ['High', 'Medium', 'Low'],
+          [pm.High || 0, pm.Medium || 0, pm.Low || 0],
+          ['#f87171', '#fb923c', '#60a5fa']);
 
-// ── Complaints filter / render ─────────────────────────────────────────────
-function applyFilter() {
-  const q  = $('q').value.toLowerCase();
-  const fs = $('fs').value, fp = $('fp').value, fd = $('fd').value;
-  filtered = complaints.filter(c =>
-    (!fs || c.status   === fs) &&
-    (!fp || c.priority === fp) &&
-    (!fd || c.department === fd) &&
-    (!q  || c.complaint.toLowerCase().includes(q) ||
-            String(c.complaint_id).includes(q) ||
-            (c.category||'').toLowerCase().includes(q))
-  );
-  page = 1;
-  render();
-}
+        if ((d.by_category || []).length)
+          barChart('c-cat', d.by_category.map(x => x.label), d.by_category.map(x => x.count));
+      } catch (e) { console.error('stats', e); }
+    }
 
-function resetFilters() {
-  $('q').value = $('fs').value = $('fp').value = $('fd').value = '';
-  applyFilter();
-}
+    async function loadComplaints() {
+      try {
+        const d = await fetch('/api/complaints?per_page=100').then(r => r.json());
+        complaints = d.data || [];
+        // Populate dept dropdown
+        const depts = [...new Set(complaints.map(c => c.department).filter(Boolean))].sort();
+        const sel = $('fd'), cur = sel.value;
+        sel.innerHTML = '<option value="">All Departments</option>' +
+          depts.map(d => `<option${d === cur ? ' selected' : ''}>${esc(d)}</option>`).join('');
+        applyFilter();
+      } catch (e) { console.error('complaints', e); }
+    }
 
-function pg(dir) {
-  const max = Math.ceil(filtered.length / PP) || 1;
-  page = Math.max(1, Math.min(page + dir, max));
-  render();
-}
+    async function loadFeedbackData() {
+      try {
+        const d = await fetch('/api/feedbacks').then(r => r.json());
+        feedbacks = d.data || [];
+        // Counts (crude sentiment from message length / keyword)
+        $('fb-total').textContent = feedbacks.length || 0;
+        const pos = feedbacks.filter(f => /good|great|thank|excellent|helpful|resolved|happy/i.test(f.message || '')).length;
+        const neg = feedbacks.filter(f => /bad|poor|worst|useless|no help|terrible|awful/i.test(f.message || '')).length;
+        $('fb-pos').textContent = pos;
+        $('fb-neg').textContent = neg;
+        renderFeedback();
+      } catch (e) { console.error('feedbacks', e); }
+    }
 
-function render() {
-  const total = filtered.length;
-  const start = (page - 1) * PP;
-  const slice = filtered.slice(start, start + PP);
-  const pages = Math.ceil(total / PP) || 1;
+    // ── Complaints filter / render ─────────────────────────────────────────────
+    function applyFilter() {
+      const q = $('q').value.toLowerCase();
+      const fs = $('fs').value, fp = $('fp').value, fd = $('fd').value;
+      filtered = complaints.filter(c =>
+        (!fs || c.status === fs) &&
+        (!fp || c.priority === fp) &&
+        (!fd || c.department === fd) &&
+        (!q || c.complaint.toLowerCase().includes(q) ||
+          String(c.complaint_id).includes(q) ||
+          (c.category || '').toLowerCase().includes(q))
+      );
+      page = 1;
+      render();
+    }
 
-  $('pinfo').textContent = total
-    ? `${start + 1}–${Math.min(start + PP, total)} of ${total}`
-    : '0 results';
-  $('pbtn').disabled = page <= 1;
-  $('nbtn').disabled = page >= pages;
+    function resetFilters() {
+      $('q').value = $('fs').value = $('fp').value = $('fd').value = '';
+      applyFilter();
+    }
 
-  if (!slice.length) {
-    $('tbody').innerHTML =
-      '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">No complaints found.</td></tr>';
-    return;
-  }
+    function pg(dir) {
+      const max = Math.ceil(filtered.length / PP) || 1;
+      page = Math.max(1, Math.min(page + dir, max));
+      render();
+    }
 
-  $('tbody').innerHTML = slice.map(c => `
+    function render() {
+      const total = filtered.length;
+      const start = (page - 1) * PP;
+      const slice = filtered.slice(start, start + PP);
+      const pages = Math.ceil(total / PP) || 1;
+
+      $('pinfo').textContent = total
+        ? `${start + 1}–${Math.min(start + PP, total)} of ${total}`
+        : '0 results';
+      $('pbtn').disabled = page <= 1;
+      $('nbtn').disabled = page >= pages;
+
+      if (!slice.length) {
+        $('tbody').innerHTML =
+          '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">No complaints found.</td></tr>';
+        return;
+      }
+
+      $('tbody').innerHTML = slice.map(c => `
     <tr style="cursor:pointer" onclick="openDetail('${c._id}')">
       <td style="font-weight:600;color:var(--accent);font-family:monospace;">#${c.complaint_id}</td>
       <td class="ellipsis" style="max-width:240px;" title="${esc(c.complaint)}">${esc(c.complaint)}</td>
-      <td class="ellipsis" style="max-width:150px;font-size:12px;color:var(--muted);">${esc(c.category||'—')}</td>
-      <td class="ellipsis" style="max-width:140px;font-size:12px;color:var(--muted);">${esc(c.department||'—')}</td>
-      <td><span class="badge b-${(c.priority||'low').toLowerCase()}">${c.priority||'—'}</span></td>
-      <td><span class="badge b-${(c.status||'pending').toLowerCase()}">${c.status||'—'}</span></td>
-      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${(c.timestamp||'').slice(0,10)}</td>
+      <td class="ellipsis" style="max-width:150px;font-size:12px;color:var(--muted);">${esc(c.category || '—')}</td>
+      <td class="ellipsis" style="max-width:140px;font-size:12px;color:var(--muted);">${esc(c.department || '—')}</td>
+      <td><span class="badge b-${(c.priority || 'low').toLowerCase()}">${c.priority || '—'}</span></td>
+      <td><span class="badge b-${(c.status || 'pending').toLowerCase()}">${c.status || '—'}</span></td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${(c.timestamp || '').slice(0, 10)}</td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap;">
         ${c.status !== 'Resolved'
           ? `<button class="btn btn-green" onclick="resolve(${c.complaint_id},this)">Resolve</button> `
@@ -532,95 +835,96 @@ function render() {
         <button class="btn btn-red" onclick="del(${c.complaint_id},this)">Del</button>
       </td>
     </tr>`).join('');
-}
+    }
 
-// ── Feedback render ────────────────────────────────────────────────────────
-function renderFeedback() {
-  const q = ($('fq')?.value || '').toLowerCase();
-  const rows = feedbacks.filter(f =>
-    !q || (f.message||'').toLowerCase().includes(q) ||
-          String(f.user_id).includes(q) ||
-          (f.username||'').toLowerCase().includes(q)
-  );
-  $('fbody').innerHTML = !rows.length
-    ? '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted);">No feedback yet.</td></tr>'
-    : rows.map((f, i) => `<tr>
-        <td style="color:var(--muted);font-size:12px;">${i+1}</td>
+    // ── Feedback render ────────────────────────────────────────────────────────
+    function renderFeedback() {
+      const q = ($('fq')?.value || '').toLowerCase();
+      const rows = feedbacks.filter(f =>
+        !q || (f.message || '').toLowerCase().includes(q) ||
+        String(f.user_id).includes(q) ||
+        (f.username || '').toLowerCase().includes(q)
+      );
+      $('fbody').innerHTML = !rows.length
+        ? '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted);">No feedback yet.</td></tr>'
+        : rows.map((f, i) => `<tr>
+        <td style="color:var(--muted);font-size:12px;">${i + 1}</td>
         <td style="font-family:monospace;font-size:12px;">${esc(String(f.user_id))}</td>
-        <td>${f.username ? '@'+esc(f.username) : '<span style="color:var(--muted)">—</span>'}</td>
+        <td>${f.username ? '@' + esc(f.username) : '<span style="color:var(--muted)">—</span>'}</td>
         <td style="max-width:340px;">${esc(f.message)}</td>
         <td>${sentimentBadge(f.message)}</td>
-        <td style="color:var(--muted);font-size:12px;white-space:nowrap;">${(f.timestamp||'').slice(0,16)}</td>
+        <td style="color:var(--muted);font-size:12px;white-space:nowrap;">${(f.timestamp || '').slice(0, 16)}</td>
       </tr>`).join('');
-}
+    }
 
-function sentimentBadge(msg) {
-  if (!msg) return '<span class="badge b-low">Neutral</span>';
-  if (/good|great|thank|excellent|helpful|resolved|happy/i.test(msg))
-    return '<span class="badge b-resolved">Positive</span>';
-  if (/bad|poor|worst|useless|no help|terrible|awful/i.test(msg))
-    return '<span class="badge b-high">Negative</span>';
-  return '<span class="badge b-low">Neutral</span>';
-}
+    function sentimentBadge(msg) {
+      if (!msg) return '<span class="badge b-low">Neutral</span>';
+      if (/good|great|thank|excellent|helpful|resolved|happy/i.test(msg))
+        return '<span class="badge b-resolved">Positive</span>';
+      if (/bad|poor|worst|useless|no help|terrible|awful/i.test(msg))
+        return '<span class="badge b-high">Negative</span>';
+      return '<span class="badge b-low">Neutral</span>';
+    }
 
-// ── Actions ───────────────────────────────────────────────────────────────
-async function resolve(id, btn) {
-  btn.disabled = true; btn.textContent = '…';
-  const r = await fetch(`/api/complaints/${id}/resolve`, { method: 'PUT' });
-  r.ok ? (toast('Resolved ✓', '#15803d'), loadAll())
-       : (toast('Error', '#b91c1c'), btn.disabled=false, btn.textContent='Resolve');
-}
+    // ── Actions ───────────────────────────────────────────────────────────────
+    async function resolve(id, btn) {
+      btn.disabled = true; btn.textContent = '…';
+      const r = await fetch(`/api/complaints/${id}/resolve`, { method: 'PUT' });
+      r.ok ? (toast('Resolved ✓', '#15803d'), loadAll())
+        : (toast('Error', '#b91c1c'), btn.disabled = false, btn.textContent = 'Resolve');
+    }
 
-async function del(id, btn) {
-  if (!confirm(`Delete complaint #${id}?`)) return;
-  btn.disabled = true;
-  const r = await fetch(`/api/complaints/${id}`, { method: 'DELETE' });
-  r.ok ? (toast('Deleted', '#ef4444'), loadAll())
-       : (toast('Error', '#b91c1c'), btn.disabled=false);
-}
+    async function del(id, btn) {
+      if (!confirm(`Delete complaint #${id}?`)) return;
+      btn.disabled = true;
+      const r = await fetch(`/api/complaints/${id}`, { method: 'DELETE' });
+      r.ok ? (toast('Deleted', '#ef4444'), loadAll())
+        : (toast('Error', '#b91c1c'), btn.disabled = false);
+    }
 
-// ── Modal ─────────────────────────────────────────────────────────────────
-function openDetail(id) {
-  const c = complaints.find(x => x._id === id); if (!c) return;
-  $('mdl').innerHTML = [
-    ['ID',         `#${c.complaint_id}`],
-    ['Complaint',  c.complaint],
-    ['Category',   c.category],
-    ['Department', c.department],
-    ['Priority',   c.priority],
-    ['Sentiment',  c.sentiment],
-    ['Status',     c.status],
-    ['User ID',    c.user_id],
-    ['Date',       c.timestamp],
-  ].map(([k,v]) => `
+    // ── Modal ─────────────────────────────────────────────────────────────────
+    function openDetail(id) {
+      const c = complaints.find(x => x._id === id); if (!c) return;
+      $('mdl').innerHTML = [
+        ['ID', `#${c.complaint_id}`],
+        ['Complaint', c.complaint],
+        ['Category', c.category],
+        ['Department', c.department],
+        ['Priority', c.priority],
+        ['Sentiment', c.sentiment],
+        ['Status', c.status],
+        ['User ID', c.user_id],
+        ['Date', c.timestamp],
+      ].map(([k, v]) => `
     <div class="modal-row">
       <span class="modal-key">${k}</span>
       <span>${esc(v)}</span>
     </div>`).join('');
-  $('modal').style.display = 'flex';
-}
+      $('modal').style.display = 'flex';
+    }
 
-function closeModal() { $('modal').style.display = 'none'; }
+    function closeModal() { $('modal').style.display = 'none'; }
 
-// ── Tabs ──────────────────────────────────────────────────────────────────
-function switchTab(t) {
-  $('panel-c').style.display = t === 'c' ? 'block' : 'none';
-  $('panel-f').style.display = t === 'f' ? 'block' : 'none';
-  $('tab-c').className = 'tab' + (t === 'c' ? ' active' : '');
-  $('tab-f').className = 'tab' + (t === 'f' ? ' active' : '');
-}
+    // ── Tabs ──────────────────────────────────────────────────────────────────
+    function switchTab(t) {
+      $('panel-c').style.display = t === 'c' ? 'block' : 'none';
+      $('panel-f').style.display = t === 'f' ? 'block' : 'none';
+      $('tab-c').className = 'tab' + (t === 'c' ? ' active' : '');
+      $('tab-f').className = 'tab' + (t === 'f' ? ' active' : '');
+    }
 
-// ── Toast ─────────────────────────────────────────────────────────────────
-let tt;
-function toast(msg, bg = '#6366f1') {
-  const el = $('toast');
-  el.textContent = msg; el.style.background = bg; el.style.display = 'block';
-  clearTimeout(tt); tt = setTimeout(() => el.style.display = 'none', 2500);
-}
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    let tt;
+    function toast(msg, bg = '#6366f1') {
+      const el = $('toast');
+      el.textContent = msg; el.style.background = bg; el.style.display = 'block';
+      clearTimeout(tt); tt = setTimeout(() => el.style.display = 'none', 2500);
+    }
 
-// ── Init ──────────────────────────────────────────────────────────────────
-loadAll();
-setInterval(loadAll, 30000);
-</script>
+    // ── Init ──────────────────────────────────────────────────────────────────
+    loadAll();
+    setInterval(loadAll, 5000);
+  </script>
 </body>
+
 </html>
