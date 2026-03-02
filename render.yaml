@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: grievance-bot
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: BOT_TOKEN
+        sync: false          # set in Render dashboard
+      - key: ADMIN_ID
+        sync: false
+      - key: MONGO_URI
+        sync: false          # use MongoDB Atlas URI
+      - key: HF_TOKEN
+        sync: false
+      - key: PORT
+        value: "8000"
+    healthCheckPath: /
+    autoDeploy: true
