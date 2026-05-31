@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import uvicorn
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, Router, types
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.exceptions import TelegramConflictError
@@ -46,6 +46,14 @@ counters_col   = None
 
 # Thread pool for running sync pymongo calls without event-loop binding issues
 _executor = ThreadPoolExecutor(max_workers=8)
+
+
+def _mongo_client_kwargs(uri: str) -> dict:
+    """Use TLS only for Atlas-style URIs or explicit TLS configurations."""
+    kwargs = {"serverSelectionTimeoutMS": 10000}
+    if uri.startswith("mongodb+srv://") or "tls=true" in uri.lower() or "ssl=true" in uri.lower():
+        kwargs["tlsCAFile"] = certifi.where()
+    return kwargs
 
 
 async def _db(fn):
@@ -344,10 +352,10 @@ def analyze_sentiment(text: str, priority: str) -> str:
 
 # ─── Telegram Bot ─────────────────────────────────────────────────────────────
 bot = Bot(token=BOT_TOKEN)
-dp  = Dispatcher()
+router = Router()
 
 
-@dp.message(Command("log"))
+@router.message(Command("log"))
 async def log_complaint(message: types.Message):
     try:
         parts = message.text.split(maxsplit=1)
@@ -411,7 +419,7 @@ async def log_complaint(message: types.Message):
         logging.exception("Error in log_complaint")
 
 
-@dp.message(Command("resolve"))
+@router.message(Command("resolve"))
 async def resolve_complaint(message: types.Message):
     try:
         if message.from_user.id != ADMIN_ID:
@@ -437,7 +445,7 @@ async def resolve_complaint(message: types.Message):
         await message.reply(f"❌ An error occurred: {e}")
 
 
-@dp.message(Command("history"))
+@router.message(Command("history"))
 async def complaint_history(message: types.Message):
     user_id = str(message.from_user.id)
     docs    = await _db(lambda: list(
@@ -453,7 +461,7 @@ async def complaint_history(message: types.Message):
     await message.reply("\n".join(lines), parse_mode=ParseMode.MARKDOWN)
 
 
-@dp.message(Command("feedback"))
+@router.message(Command("feedback"))
 async def feedback_command(message: types.Message):
     feedback_text = message.text.replace("/feedback", "").strip()
     if feedback_text:
@@ -469,7 +477,7 @@ async def feedback_command(message: types.Message):
         await message.reply("Please provide feedback. Example: /feedback I love this bot!")
 
 
-@dp.message(Command("delete"))
+@router.message(Command("delete"))
 async def delete_complaint(message: types.Message):
     try:
         if message.from_user.id != ADMIN_ID:
@@ -492,7 +500,7 @@ async def delete_complaint(message: types.Message):
         logging.exception("Error in delete_complaint")
 
 
-@dp.message(lambda m: m.from_user.id == ADMIN_ID)
+@router.message(lambda m: m.from_user.id == ADMIN_ID)
 async def admin_message_handler(message: types.Message):
     await message.reply(
         "👋 Hello Admin! Available commands:\n\n"
@@ -502,7 +510,7 @@ async def admin_message_handler(message: types.Message):
     )
 
 
-@dp.message()
+@router.message()
 async def general_message_handler(message: types.Message):
     await message.reply(
         "👋 Hello! I'm the Grievance Bot. Here's what you can do:\n\n"
@@ -641,12 +649,11 @@ async def main():
     """
     global mongo_client, db, complaints_col, feedback_col, counters_col
 
+    dispatcher = Dispatcher()
+    dispatcher.include_router(router)
+
     # Sync MongoClient — no asyncio loop binding whatsoever
-    mongo_client   = MongoClient(
-        MONGO_URI,
-        serverSelectionTimeoutMS=10000,
-        tlsCAFile=certifi.where(),
-    )
+    mongo_client   = MongoClient(MONGO_URI, **_mongo_client_kwargs(MONGO_URI))
     db             = mongo_client["grievance_bot"]
     complaints_col = db["complaints"]
     feedback_col   = db["feedback"]
@@ -660,7 +667,7 @@ async def main():
     async def polling_with_retry():
         for attempt in range(1, 11):          # up to 10 attempts, ~50 s total
             try:
-                await dp.start_polling(bot, handle_signals=False)
+                await dispatcher.start_polling(bot, handle_signals=False)
                 break                          # clean exit
             except TelegramConflictError:
                 wait = attempt * 5
